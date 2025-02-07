@@ -1,14 +1,17 @@
-import os
-
 import discord
-from discord import Intents, app_commands, client
-from dotenv import load_dotenv
-import random
+from discord import app_commands
+from typing import Optional
+from discord.ui import select
+
 import json
+import random
+import time
+from datetime import timedelta
+import asyncio
 
-from src import nerv
-
-load_dotenv()
+from src.utils import *
+from src.webhook import send_webhook_message
+from src.crypt import encrypt, decrypt
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -17,81 +20,38 @@ intents.messages = True
 intents.guilds = True
 
 client = discord.Client(command_prefix="!", intents=intents)
-tree = app_commands.CommandTree(client)
+slash = app_commands.CommandTree(client)
+
+random.seed(time.time())
 
 ###################
 #    VARiABLES    #
 ###################
-DC_TOKEN = os.getenv("DC_TOKEN")
-ZN_KEY = os.getenv("ZN_KEY")
-
-with open('config.json', 'r') as file:
+with open('config/config.json', 'r') as file:
     config = json.load(file)
 
-ROL_BEKLE = config["ROL_BEKLE"]
-ROL_LUMiRIAN = config["ROL_LUMiRIAN"]
+# Token
+CLIENT_TOKEN = config["CLIENT_TOKEN"]
 
-THREAD_REGISTRY = config["THREAD_REGISTRY"]
-CHANNEL_MESSAGE = config["CHANNEL_MESSAGE"]
-CHANNEL_ZINCIRLI = config["CHANNEL_ZINCIRLI"]
-CHANNEL_BEKLE = config["CHANNEL_BEKLE"]
+NV_GUILD = config["NV_GUILD"]
+GOS_GUILD = config["GOS_GUILD"]
 
-MIYAV_DIALOGUE = config["MIYAV_DIALOGUE"]
-MIYAV_REPLY = config["MIYAV_REPLY"]
+ZN_CH = config["ZN_CH"]
+ZN_KEY = config["ZN_KEY"]
 
-GUILD = config["GUILD"]
+GOS_KAYITSIZ = config["GOS_KAYITSIZ"]
+GOS_KAYIT_CH = config["GOS_KAYIT_CH"]
 
-ROL_BEKLE = config["ROL_BEKLE"]
-ROL_LUMiRIAN = config["ROL_LUMiRIAN"]
+GATE_KEEPER = config["GATE_KEEPER"]
+LUM_ROL = config["LUM_ROL"]
 
-c2v4 = config["c2v4"]
+NV_USER_LOG_CH = config["NV_USER_LOG_CH"]
 
-@client.event
-async def on_member_join(member):
-    role = discord.utils.get(member.guild.roles, id=ROL_BEKLE)
-    await member.add_roles(role)
-
-    bekleme = client.get_channel(CHANNEL_BEKLE)
-    await nerv.send_webhook_message("neco", bekleme, f"Hos geldin {member.mention}, sunucuya katilman icin bir kac soruya cevap vermelisin.\n> Yasin kac?\n> Sunucuya neden katildin?")
+VERSION = config["VERSION"]
 
 @client.event
 async def on_ready():
-    await tree.sync()
-    print(f"name: {client.user}")
-
-@client.event
-async def on_message_delete(message):
-    if message.author == client.user:
-        return
-    if message.webhook_id:
-        return
-
-@client.event
-async def on_message_delete(message):
-    if message.author == client.user:
-        return
-    if message.webhook_id:
-        return
-
-    avatar_url = message.author.avatar.url if message.author.avatar else "https://i.imgur.com/CSU09SU.png"
-    content = message.content
-
-    attachments = message.attachments
-    if attachments:
-        for attachment in attachments:
-            content += f"\n\n[Attachment]({attachment.url})"
-   
-    if "@everyone" in content:
-        nerv.change_words(content, "@everyone", "#everyone")
-
-    channel = client.get_channel(CHANNEL_MESSAGE)
-    await nerv.send_webhook_message(
-        "custom", 
-        channel,
-        content,
-        custom_avatar=avatar_url,
-        custom_name=f"{message.author.name} [\'{message.author.id}\' \'{message.id}\']"
-    )
+    print(f"[work]: {client.user}")
 
 @client.event
 async def on_message(message):
@@ -99,149 +59,234 @@ async def on_message(message):
         return
     if message.webhook_id:
         return
-        
     content = message.content.lower()
 
-    if content.startswith("nya"):
-        await nerv.send_webhook_message("neco", message.channel, "Burenyuu!")
+    ###################
+    #      PURGE      #
+    ###################
+    if content.startswith("!purge"):
+        if message.channel.permissions_for(message.author).manage_messages:
+            args = message.content.split()
+            count = int(args[1]) if len(args) > 1 and args[1].isdigit() else 0
+            if count < 1 or count > 100:
+                await message.reply("[warn]: `!purge 1-100`", delete_after=5)
+                return
+            deleted = await message.channel.purge(limit=count)
+            await message.reply(f"[info]: {len(deleted)} messages deleted", delete_after=5)
+        else:
+            await message.reply("[warn]: No permission", delete_after=5)
     
-    if any(content.startswith(keyword) for keyword in MIYAV_DIALOGUE):
-        miyavlama = random.choice(MIYAV_REPLY)
-        await nerv.send_webhook_message("necopara", message.channel, miyavlama)
-    
-    if message.channel.id == CHANNEL_ZINCIRLI:
-        encrypted_message = nerv.encrypt(message.content, ZN_KEY)
+    ###################
+    #       BAN       #
+    ###################
+    if content.startswith("!ban"):
+        if not message.author.guild_permissions.ban_members:
+            await message.reply("[warn]: No permission", delete_after=5)
+            return
+
+        args = message.content.split()
+        if len(args) < 2:
+            await message.reply("[warn]: `!ban @user/id [reason]`", delete_after=5)
+            return
+
+        user_mention = message.mentions[0] if message.mentions else None
+        user_id = args[1] if not user_mention else None
+        reason = " ".join(args[2:]) if len(args) > 2 else ""
+        user = None
+
+        try:
+            if user_mention:
+                user = user_mention
+            elif user_id and user_id.isdigit():
+                user = await client.fetch_user(int(user_id))
+            else:
+                await message.reply("97.", delete_after=5)
+                return
+
+            if isinstance(user, discord.Member):
+                if message.author.top_role <= user.top_role:
+                    await message.reply("[warn]: your permission is not enough to ban this user", delete_after=5)
+                    return
+
+            await message.guild.ban(user, reason=reason)
+            await message.reply(f"[info]: {user.mention} kicked by {message.author}, {reason}")
+
+        except discord.Forbidden:
+            await message.reply("[warn]: I don't have permission to kick this user", delete_after=5)
+        except discord.HTTPException as e:
+            await message.reply(f"[error]: {e}", delete_after=5)
+
+    ###################
+    #       KICK      #
+    ###################
+    if content.startswith("!kick"):
+        if not message.author.guild_permissions.kick_members:
+            await message.reply("[warn]: No permission")
+            return
+
+        args = message.content.split()
+        if len(args) < 2:
+            await message.reply("[warn]: `!kick @user/id`")
+            return
+
+        member = None
+        if message.mentions:
+            member = message.mentions[0]
+        else:
+            try:
+                user_id = int(args[1])
+                member = message.guild.get_member(user_id)
+            except ValueError:
+                await message.reply("[warn]: user id is wrong")
+                return
+
+        if not member:
+            await message.reply("[warn]: user not found")
+            return
+
+        if member == message.author:
+            await message.reply("[warn]: you can't kick yourself")
+            return
+        
+        if message.guild.owner_id == member.id:
+            await message.reply("[warn]: you can't kick the guild owner")
+            return
+
+        if message.author.top_role <= member.top_role:
+            await message.reply("[warn]: your permission is not enough to kick this user")
+            return
+
+        try:
+            await member.kick(reason=f"kicked by {message.author}")
+            await message.reply(f"[info]: {member.mention} kicked by {member.author}")
+        except discord.Forbidden:
+            await message.reply("[warn]: I don't have permission to kick this user")
+        except discord.HTTPException as e:
+            await message.reply(f"[error]: {e}")
+
+    ###################
+    #       RULET     #
+    ###################
+    if content.startswith("!rulet"):
+        user = message.author
+        outcome = random.choice(["win", "lose"])
+        
+        await message.reply("Derin bir nefes alarak tetiğe yavaşça basıyorsun...")
+        await asyncio.sleep(3)
+        if outcome == "win":
+            await message.channel.send("Bugün ölüm seninle boy ölçüşemedi.")
+        else:
+            try:
+                duration = 86400
+                await user.timeout(discord.utils.utcnow() + timedelta(seconds=duration), reason="Rulet kaybı")
+                await message.channel.send(f"Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, geçmişin sessiz anılarıyla kısa bir elveda zamanı...")
+            except discord.HTTPException as e:
+                await message.reply(f"[error]: {e}", delete_after=5)
+
+    ###################
+    #       RULET     #
+    ###################
+    if message.channel.id == ZN_CH:
+        encrypted_message = encrypt(content, ZN_KEY)
         avatar_url = message.author.avatar.url if message.author.avatar else "https://i.imgur.com/CSU09SU.png"
-        await nerv.send_webhook_message("custom", message.channel, encrypted_message, custom_avatar=avatar_url, custom_name=message.author.name)
+        await send_webhook_message("custom", message.channel, encrypted_message, custom_avatar=avatar_url, custom_name=message.author.name)
         await message.delete()
 
-#######################
-## encrypt / decrypt ##
-#######################
-@tree.command(
-    name="encrypt",
-    description="Mesaji sifreler."
-)
-async def encrypt(interaction: discord.Interaction, message: str):
-    try:
-        encrypted_message = nerv.encrypt(message, ZN_KEY)
-        await nerv.send_webhook_message("custom", interaction.channel, encrypted_message, custom_avatar=interaction.user.avatar.url, custom_name=interaction.user.name)
-        await interaction.response.send_message("sex", ephemeral=True)
-    except Exception as e:
-        await interaction.response.send_message(f"{e}", ephemeral=True)
+    if content.startswith("!version"):
+        await message.reply(f"[info]: Amadeus System {VERSION}")
 
-@tree.command(
-    name="decrypt",
-    description="Mesajin sifresini cozer."
-)
-async def decrypt(interaction: discord.Interaction, message_id: str):
-    if interaction.user.id in c2v4:
-        try:
-            message = await interaction.channel.fetch_message(int(message_id))
-            decrypted_message = nerv.decrypt(message.content, ZN_KEY)
-            await interaction.response.send_message(decrypted_message, ephemeral=True)
-        except Exception as e:
-            await interaction.response.send_message(f"{str(e)}", ephemeral=True)
+@client.event
+async def on_member_join(member):
+    steinsGate_guild = client.get_guild(GOS_GUILD)
+    lum_guild = client.get_guild(NV_GUILD)
+
+    if steinsGate_guild:
+        if steinsGate_guild.get_member(member.id):
+            role = discord.utils.get(member.guild.roles, id=GOS_KAYITSIZ)
+            await member.add_roles(role)
+
+            channel = client.get_channel(GOS_KAYIT_CH)
+            if channel:
+                await channel.send(member.mention, delete_after=5)
+            else:
+                return
+            return
+        else:
+            return
+
+    elif lum_guild:
+        if lum_guild.get_member(member.id):
+            guild = member.guild
+            gate_keeper = guild.get_role(GATE_KEEPER)
+            category = discord.utils.get(guild.categories, name="BEKLE!")
+
+            if not category:
+                channel = member.guild.system_channel
+                await channel.send("[error]: category not found")
+                return
+
+            overwrites = {
+                guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                member: discord.PermissionOverwrite(view_channel=True, send_messages=True),
+                gate_keeper: discord.PermissionOverwrite(
+                    view_channel=True, 
+                    send_messages=True, 
+                    embed_links=True,
+                    attach_files=True,
+                    add_reactions=True
+                ),
+            }
+
+            try:
+                member_ch = await category.create_text_channel(name=member.name, overwrites=overwrites)
+                await member_ch.send(welcome_message(member.mention))
+            except discord.Forbidden:
+                print("[error]: No permission")
+            except discord.HTTPException as e:
+                print(f"[error]: {e}")
+        else:
+            return
     else:
-        await interaction.response.send_message("sex oldu", ephemeral=True)
+        return
 
-###########
-## KAYIT ##
-###########
-@tree.command(
-    name="kayit",
+@slash.command(
+    name="register",
     description="Bir üyenin kaydını yapar.",
-    guild=discord.Object(id=GUILD)
 )
-async def kayit(interaction: discord.Interaction, member: discord.Member, age: int = 0, why: str = "None"):
-    kayit_rol = discord.utils.get(interaction.guild.roles, id=ROL_LUMiRIAN)
-    remove_rol = discord.utils.get(interaction.guild.roles, id=ROL_BEKLE)
+async def kayit( interaction: discord.Interaction, member: discord.Member, age: Optional[int] = None, why: Optional[str] = None ):
+    ALLOWED_ROLES = {1213598172040003604, 1336209216809205822}
 
-    if kayit_rol and remove_rol:
-        await member.add_roles(kayit_rol)
-        await member.remove_roles(remove_rol)
+    user_roles = {role.id for role in interaction.user.roles}
+    if not user_roles & ALLOWED_ROLES:
+        await interaction.response.send_message("[warn]: yetkin yetmiyor", ephemeral=True)
+        return
 
-    log_channel = client.get_channel(CHANNEL_MESSAGE)
+    kayit_rol = discord.utils.get(interaction.guild.roles, id=LUM_ROL)
+    await member.add_roles(kayit_rol)
+
+    log_channel = client.get_channel(NV_USER_LOG_CH)
 
     embed = discord.Embed(
         title="Üye Kaydı Yapıldı",
-        description=f"**Üye:** {member.mention}\n**Yaş:** {age}\n**Katılma Sebebi:** {why}",
+        description=f"**Üye:** {member.mention}\n**Yaş:** {age}\n**Katılma Sebebi:** {why}\n**Kayit eden:** {interaction.user.id}",
         color=discord.Color.yellow()
     )
 
     await log_channel.send(embed=embed)
-    await interaction.response.send_message("Kayit ettim sex", ephemeral=True)
+    overwrites = {
+        member: discord.PermissionOverwrite(view_channel=False, send_messages=False)
+    }
 
-@tree.command(
-    name="avatar",
-    description="Avatarı gösterir."
+    await interaction.channel.set_permissions(member, overwrite=overwrites[member]) 
+    await interaction.response.send_message("Kayit ettim", ephemeral=True)
+
+@slash.command(
+    name="shortened_link",
+    description="linki kisaltir"
 )
-async def avatar(interaction: discord.Interaction, member: discord.Member = None):
-    user = member if member else interaction.user
-    avatar_url = user.avatar.url if user.avatar else None
+async def short_link(interaction: discord.Interaction, url: str):
+    shortened = shorten_url(f"{url}")
+    await interaction.response.send_message(shortened)
 
-    if avatar_url:
-        await interaction.response.send_message(f"{avatar_url}")
-    else:
-        await interaction.response.send_message("sex oldu", ephemeral=True)
-
-##################
-## REI/NECO/... ##
-##################
-@tree.command(
-    name="rei",
-    description="REI REI REI REI."
-)
-async def rei(interaction: discord.Interaction):
-    rei_rnd = nerv.reicik()
-    await interaction.response.send_message(rei_rnd)
-
-@tree.command(
-    name="neco",
-    description="NECO NECO NECO NECO."
-)
-async def neco(interaction: discord.Interaction):
-    neco_rnd = nerv.necocuk()
-    await interaction.response.send_message(neco_rnd)
-
-@tree.command(
-    name="url",
-    description="url ekle",
-)
-async def url(interaction: discord.Interaction, list_name: str, url: str):
-    if list_name not in ["neco", "rei"]:
-        await interaction.response.send_message("somurtmak", ephemeral=True)
-        return
-    
-    filename = f'{list_name}.json'
-    nerv.update_json(f"src/{filename}", url)
-    
-    await interaction.response.send_message(f"**{list_name.capitalize()}** ekledim sex")
-
-@tree.command(
-    name="send",
-    description="Mesaj gönderir."
-)
-async def send(interaction: discord.Interaction, message: str, avatar: str, name: str):
-    if "@everyone" in message or "@here" in message:
-        message_clr = nerv.change_words(message, "@everyone", "#everyone")
-        message_clr = nerv.change_words(message_clr, "@here", "#here")
-        await nerv.send_webhook_message(
-            "custom", 
-            interaction.channel,
-            message_clr,
-            custom_avatar=avatar,
-            custom_name=name
-        )
-    else:
-        await nerv.send_webhook_message(
-            "custom", 
-            interaction.channel,
-            message,
-            custom_avatar=avatar,
-            custom_name=name
-        )
-    await interaction.response.send_message("sex", ephemeral=True)
-
-client.run(DC_TOKEN)
+client.run(CLIENT_TOKEN)
 
