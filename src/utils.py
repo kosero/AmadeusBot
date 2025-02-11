@@ -1,10 +1,22 @@
 import requests
+import json
 from bs4 import BeautifulSoup
 
 def change_words(text, old_word, new_word):
     updated_text = text.replace(old_word, new_word)
     return updated_text
 
+def chg_json_var(file_path: str, key: str, new_value):
+    with open(file_path, "r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    if key in data:
+        data[key] = new_value
+
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump(data, file, indent=4)
+    else:
+        return
 
 def welcome_message(member):
     welcome = (
@@ -46,4 +58,3 @@ def shorten_url(long_url):
             return short_url_input["value"]
         return "[warn]. url bulamadim galiba bilmiyom"
     return f"[warn]: {response.status_code} - {response.text}"
-

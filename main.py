@@ -1,17 +1,17 @@
 import discord
 from discord import app_commands
 from typing import Optional
-from discord.ui import select
 
 import json
-import random
-import time
-from datetime import timedelta
-import asyncio
 
 from src.utils import *
-from src.webhook import send_webhook_message
-from src.crypt import encrypt, decrypt
+
+from src.cmd.crypt import zn_ch_en 
+from src.cmd.ai import *
+from src.cmd.ban import ban_user
+from src.cmd.purge import message_purge
+from src.cmd.kick import kick_user
+from src.cmd.rulet import rulet
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -21,8 +21,6 @@ intents.guilds = True
 
 client = discord.Client(command_prefix="!", intents=intents)
 slash = app_commands.CommandTree(client)
-
-random.seed(time.time())
 
 ###################
 #    VARiABLES    #
@@ -37,7 +35,6 @@ NV_GUILD = config["NV_GUILD"]
 GOS_GUILD = config["GOS_GUILD"]
 
 ZN_CH = config["ZN_CH"]
-ZN_KEY = config["ZN_KEY"]
 
 GOS_KAYITSIZ = config["GOS_KAYITSIZ"]
 GOS_KAYIT_CH = config["GOS_KAYIT_CH"]
@@ -51,6 +48,7 @@ VERSION = config["VERSION"]
 
 @client.event
 async def on_ready():
+    await slash.sync()
     print(f"[work]: {client.user}")
 
 @client.event
@@ -59,141 +57,55 @@ async def on_message(message):
         return
     if message.webhook_id:
         return
+
     content = message.content.lower()
+    args = message.content.split()
 
     ###################
     #      PURGE      #
     ###################
     if content.startswith("!purge"):
-        if message.channel.permissions_for(message.author).manage_messages:
-            args = message.content.split()
-            count = int(args[1]) if len(args) > 1 and args[1].isdigit() else 0
-            if count < 1 or count > 100:
-                await message.reply("[warn]: `!purge 1-100`", delete_after=5)
-                return
-            deleted = await message.channel.purge(limit=count)
-            await message.reply(f"[info]: {len(deleted)} messages deleted", delete_after=5)
-        else:
-            await message.reply("[warn]: No permission", delete_after=5)
-    
+        await message_purge(message, args)
+        return
+
     ###################
     #       BAN       #
     ###################
     if content.startswith("!ban"):
-        if not message.author.guild_permissions.ban_members:
-            await message.reply("[warn]: No permission", delete_after=5)
-            return
-
-        args = message.content.split()
-        if len(args) < 2:
-            await message.reply("[warn]: `!ban @user/id [reason]`", delete_after=5)
-            return
-
-        user_mention = message.mentions[0] if message.mentions else None
-        user_id = args[1] if not user_mention else None
-        reason = " ".join(args[2:]) if len(args) > 2 else ""
-        user = None
-
-        try:
-            if user_mention:
-                user = user_mention
-            elif user_id and user_id.isdigit():
-                user = await client.fetch_user(int(user_id))
-            else:
-                await message.reply("97.", delete_after=5)
-                return
-
-            if isinstance(user, discord.Member):
-                if message.author.top_role <= user.top_role:
-                    await message.reply("[warn]: your permission is not enough to ban this user", delete_after=5)
-                    return
-
-            await message.guild.ban(user, reason=reason)
-            await message.reply(f"[info]: {user.mention} kicked by {message.author}, {reason}")
-
-        except discord.Forbidden:
-            await message.reply("[warn]: I don't have permission to kick this user", delete_after=5)
-        except discord.HTTPException as e:
-            await message.reply(f"[error]: {e}", delete_after=5)
+        await ban_user(message, args)
+        return
 
     ###################
     #       KICK      #
     ###################
     if content.startswith("!kick"):
-        if not message.author.guild_permissions.kick_members:
-            await message.reply("[warn]: No permission")
-            return
-
-        args = message.content.split()
-        if len(args) < 2:
-            await message.reply("[warn]: `!kick @user/id`")
-            return
-
-        member = None
-        if message.mentions:
-            member = message.mentions[0]
-        else:
-            try:
-                user_id = int(args[1])
-                member = message.guild.get_member(user_id)
-            except ValueError:
-                await message.reply("[warn]: user id is wrong")
-                return
-
-        if not member:
-            await message.reply("[warn]: user not found")
-            return
-
-        if member == message.author:
-            await message.reply("[warn]: you can't kick yourself")
-            return
-        
-        if message.guild.owner_id == member.id:
-            await message.reply("[warn]: you can't kick the guild owner")
-            return
-
-        if message.author.top_role <= member.top_role:
-            await message.reply("[warn]: your permission is not enough to kick this user")
-            return
-
-        try:
-            await member.kick(reason=f"kicked by {message.author}")
-            await message.reply(f"[info]: {member.mention} kicked by {member.author}")
-        except discord.Forbidden:
-            await message.reply("[warn]: I don't have permission to kick this user")
-        except discord.HTTPException as e:
-            await message.reply(f"[error]: {e}")
+        await kick_user(message, args)
+        return
 
     ###################
     #       RULET     #
     ###################
     if content.startswith("!rulet"):
-        user = message.author
-        outcome = random.choice(["win", "lose"])
-        
-        await message.reply("Derin bir nefes alarak tetiğe yavaşça basıyorsun...")
-        await asyncio.sleep(3)
-        if outcome == "win":
-            await message.channel.send("Bugün ölüm seninle boy ölçüşemedi.")
-        else:
-            try:
-                duration = 86400
-                await user.timeout(discord.utils.utcnow() + timedelta(seconds=duration), reason="Rulet kaybı")
-                await message.channel.send(f"Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, geçmişin sessiz anılarıyla kısa bir elveda zamanı...")
-            except discord.HTTPException as e:
-                await message.reply(f"[error]: {e}", delete_after=5)
+        await rulet(message)
+        return
 
     ###################
-    #       RULET     #
+    #     ZINCIRLI    #
     ###################
     if message.channel.id == ZN_CH:
-        encrypted_message = encrypt(content, ZN_KEY)
-        avatar_url = message.author.avatar.url if message.author.avatar else "https://i.imgur.com/CSU09SU.png"
-        await send_webhook_message("custom", message.channel, encrypted_message, custom_avatar=avatar_url, custom_name=message.author.name)
-        await message.delete()
+        await zn_ch_en(message)
+        return
+
+    ###################
+    #     KURISU CH   #
+    ###################
+    if message.channel.id == 1338301496923652137:
+        await kurisu_ch(message)
+        return
 
     if content.startswith("!version"):
         await message.reply(f"[info]: Amadeus System {VERSION}")
+        return
 
 @client.event
 async def on_member_join(member):
@@ -208,13 +120,9 @@ async def on_member_join(member):
             channel = client.get_channel(GOS_KAYIT_CH)
             if channel:
                 await channel.send(member.mention, delete_after=5)
-            else:
-                return
-            return
-        else:
             return
 
-    elif lum_guild:
+    if lum_guild:
         if lum_guild.get_member(member.id):
             guild = member.guild
             gate_keeper = guild.get_role(GATE_KEEPER)
@@ -229,8 +137,8 @@ async def on_member_join(member):
                 guild.default_role: discord.PermissionOverwrite(view_channel=False),
                 member: discord.PermissionOverwrite(view_channel=True, send_messages=True),
                 gate_keeper: discord.PermissionOverwrite(
-                    view_channel=True, 
-                    send_messages=True, 
+                    view_channel=True,
+                    send_messages=True,
                     embed_links=True,
                     attach_files=True,
                     add_reactions=True
@@ -244,10 +152,7 @@ async def on_member_join(member):
                 print("[error]: No permission")
             except discord.HTTPException as e:
                 print(f"[error]: {e}")
-        else:
             return
-    else:
-        return
 
 @slash.command(
     name="register",

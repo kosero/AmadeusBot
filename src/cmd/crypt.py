@@ -1,4 +1,11 @@
-import re 
+import re
+import json
+from src.cmd.webhook import send_webhook_message
+
+with open('config/config.json', 'r') as file:
+    config = json.load(file)
+
+ZN_KEY = config["ZN_KEY"]
 
 def encrypt(plaintext, key):
     def encrypt_match(match):
@@ -51,3 +58,10 @@ def decrypt(ciphertext, key):
             plaintext += patterns[i]
 
     return plaintext.lower()
+
+async def zn_ch_en(message):
+    encrypted_message = encrypt(message.content, ZN_KEY)
+    avatar_url = message.author.avatar.url if message.author.avatar else "https://i.imgur.com/CSU09SU.png"
+    await send_webhook_message("custom", message.channel, encrypted_message, custom_avatar=avatar_url, custom_name=message.author.name)
+    await message.delete()
+
