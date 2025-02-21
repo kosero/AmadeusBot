@@ -1,19 +1,24 @@
 {
-  "NECO_PPS": [
-    "https://i.imgur.com/0S2ygVX.png",
-    "https://i.imgur.com/ljGAfMg.jpeg",
-  ],
-  "CLIENT_TOKEN": "",
-  "NV_GUILD": ,
-  "GOS_GUILD": ,
-  "ZN_CH": ,
-  "ZN_KEY": "",
-  "GOS_KAYITSIZ": ,
-  "GOS_KAYIT_CH": ,
-  "GATE_KEEPER": ,
-  "LUM_ROL": ,
-  "NV_USER_LOG_CH": ,
-  "CAI_TOKEN": "",
-  "CAI_CHAT_ID": "",
-  "VERSION": "0.1.1"
+    "GOS_GUILD": 1321469632481067008,
+    "GOS_REGISTER_CH": 1337315968640356362,
+
+    "LUM_GUILD": 1154598232651997214,
+    "LUM_ROLE": 1165680635055181885,
+    "GATE_KEEPER": 1336209216809205822,
+    "LUM_USER_LOG_CH": 1246728895957569616,
+
+    "NECO_PPS": [
+        "https://i.imgur.com/0S2ygVX.png",
+        "https://i.imgur.com/ljGAfMg.jpeg"
+    ],
+
+    "ZINCIRLI_KEY": "pirt",
+    "ZINCIRLI_CH": 1268673900271767672,
+
+    "CAI_CHAT_ID": "519e8e03-e16f-4c50-a0bc-70ca5444ab20",
+    "CAI_TOKEN": "e33d307ac46fbb544c4c43bb740f4fd9fad3cf62",
+    "CAI_CHAR": "NbOISAxpDy88mPv7YB-PfHFwNzVcZv0GDA2OlcWgeZY",
+
+    "BOT_TOKEN": "",
+    "version": "0.2.0"
 }
