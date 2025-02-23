@@ -9,7 +9,7 @@ class MessagePurge(commands.Cog):
 
     @commands.command()
     async def purge(self, ctx, count: int = 0):
-        if not ctx.author.guild_permissions.manage_messages:
+        if not ctx.channel.permissions_for(ctx.author).manage_messages:
             await ctx.reply("[warn]: No permission", delete_after=5)
             return
 
@@ -30,7 +30,7 @@ class SlashPurge(commands.Cog):
     )
     @app_commands.describe(count="The number of messages to delete (1-100).")
     async def slash_purge(self, interaction: discord.Interaction, count: int = 0):
-        if not interaction.user.guild_permissions.manage_messages:
+        if not interaction.channel.permissions_for(interaction.user).manage_messages: 
             await interaction.response.send_message(
                 "[warn]: No permission", ephemeral=True
             )
