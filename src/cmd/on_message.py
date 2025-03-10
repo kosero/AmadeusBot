@@ -4,7 +4,7 @@ from discord.ext import commands
 from src.cmd.crypt import encrypt
 from src.utils import send_webhook_message
 
-from cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY
+from cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY, VERSION
 
 
 class OnMessage(commands.Cog):
@@ -32,6 +32,9 @@ class OnMessage(commands.Cog):
                 custom_name=message.author.name,
             )
             await message.delete()
+
+        if message.content.lower("!version"):
+            await message.reply(VERSION)
 
 
 async def setup(bot):
