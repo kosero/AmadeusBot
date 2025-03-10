@@ -33,9 +33,6 @@ class OnMessage(commands.Cog):
             )
             await message.delete()
 
-        if message.content.lower("!version"):
-            await message.reply(VERSION)
-
 
 async def setup(bot):
     await bot.add_cog(OnMessage(bot))
