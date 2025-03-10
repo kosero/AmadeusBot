@@ -1,17 +1,6 @@
-import json
 import discord
 from discord.ext import commands
-
-with open("config/config.json", "r") as file:
-    config = json.load(file)
-
-# GATE OF STEINER
-GOS_GUILD = config["GOS_GUILD"]
-GOS_REGISTER_CH = config["GOS_REGISTER_CH"]
-
-# LUM
-LUM_GUILD = config["LUM_GUILD"]
-GATE_KEEPER = config["GATE_KEEPER"]
+from cfg.config import GOS_GUILD, GOS_REGISTER_CH, LUM_GUILD, GATE_KEEPER
 
 
 def welcome_message(member):

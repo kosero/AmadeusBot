@@ -2,6 +2,8 @@ import json
 import discord
 import random
 
+from cfg.config import NECO_PPS
+
 
 def change_words(text, old_word, new_word):
     updated_text = text.replace(old_word, new_word)
@@ -19,12 +21,6 @@ def chg_json_var(file_path: str, key: str, new_value):
             json.dump(data, file, indent=4)
     else:
         return
-
-
-with open("config/config.json", "r") as file:
-    config = json.load(file)
-
-NECO_PPS = config["NECO_PPS"]
 
 
 async def get_or_create_webhook(channel):

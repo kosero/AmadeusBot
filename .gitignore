@@ -1,3 +1,3 @@
-config/config.json
+cfg/config.py
 venv
 **__pycache__

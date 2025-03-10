@@ -5,11 +5,7 @@ import json
 import re
 from src.utils import send_webhook_message
 
-
-with open("config/config.json", "r") as file:
-    config = json.load(file)
-
-ZINCIRLI_KEY = config["ZINCIRLI_KEY"]
+from cfg.config import ZINCIRLI_KEY
 
 
 def encrypt(plaintext, key):

@@ -1,15 +1,10 @@
-import json
 import discord
 from discord.ext import commands
 from discord import app_commands
 import datetime
 
-with open("config/config.json") as file:
-    config = json.load(file)
 
-LUM_ROLE = config["LUM_ROLE"]
-LUM_USER_LOG_CH = config["LUM_USER_LOG_CH"]
-GATE_KEEPER = config["GATE_KEEPER"]
+from cfg.config import LUM_ROLE, LUM_USER_LOG_CH, GATE_KEEPER
 
 
 class Register(commands.Cog):

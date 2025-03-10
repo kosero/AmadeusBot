@@ -1,12 +1,8 @@
-import json
 import discord
 from discord.ext import commands
 import os
 
-with open("config/config.json") as file:
-    config = json.load(file)
-
-BOT_TOKEN = config["BOT_TOKEN"]
+from cfg.config import BOT_TOKEN
 
 
 class AmadeusBot(commands.Bot):

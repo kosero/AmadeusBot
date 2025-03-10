@@ -1,0 +1,22 @@
+GOS_GUILD: int = 123456789
+GOS_REGISTER_CH: int = 123456789
+
+LUM_GUILD: int = 123456789
+LUM_ROLE: int = 123456789
+GATE_KEEPER: int = 123456789
+LUM_USER_LOG_CH: int = 123456789
+
+NECO_PPS = [
+    "https://i.imgur.com/0S2ygVX.png",
+    "https://i.imgur.com/ljGAfMg.jpeg",
+]
+
+ZINCIRLI_KEY: str = "key"
+ZINCIRLI_CH: int = 123456789
+
+CAI_CHAT_ID: str = ""
+CAI_TOKEN: str = ""
+CAI_CHAR: str = ""
+
+VERSION: str = "0.2.1"
+BOT_TOKEN: str = ""
