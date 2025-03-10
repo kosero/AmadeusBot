@@ -10,7 +10,7 @@ class Version(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def ping(self, ctx):
+    async def version(self, ctx):
         await ctx.reply(f"{VERSION}")
         print(f"[ok]: version, author: {ctx.author}")
 
@@ -20,7 +20,7 @@ class Slash_version(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="version", description="dupdisdup :whale:")
-    async def ping(self, interaction: discord.Interaction):
+    async def version(self, interaction: discord.Interaction):
         await interaction.response.send_message(f"{VERSION}")
         print(f"[ok]: version, author: {interaction.user}")
 
