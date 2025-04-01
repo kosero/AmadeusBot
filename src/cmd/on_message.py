@@ -1,10 +1,9 @@
-import json
 from discord.ext import commands
 
 from src.cmd.crypt import encrypt
 from src.utils import send_webhook_message
 
-from cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY, VERSION
+from src.cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY
 
 
 class OnMessage(commands.Cog):

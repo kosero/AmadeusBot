@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cfg.config import GOS_GUILD, GOS_REGISTER_CH, LUM_GUILD, GATE_KEEPER
+from src.cfg.config import GOS_GUILD, GOS_REGISTER_CH, LUM_GUILD, GATE_KEEPER
 
 
 def welcome_message(member):
@@ -31,6 +31,7 @@ class MemberJoin(commands.Cog):
                     await register_ch.send(member.mention, delete_after=5)
                 print(f"[info]: {member.name} joins GOS guild")
                 return
+
         if lum_guild:
             if lum_guild.get_member(member.id):
                 guild = member.guild
@@ -60,6 +61,23 @@ class MemberJoin(commands.Cog):
                         name=member.name, overwrites=overwrites
                     )
                     await member_ch.send(welcome_message(member.mention))
+                    embed = discord.Embed(
+                        title=f"[user]: {member.mention}!",
+                        color=discord.Color.blue(),
+                    )
+                    embed.set_thumbnail(
+                        url=(
+                            member.avatar.url
+                            if member.avatar
+                            else member.default_avatar.url
+                        )
+                    )
+                    embed.add_field(
+                        name="Hesap Oluşturulma Tarihi",
+                        value=member.created_at.strftime("%d %B %Y"),
+                        inline=True,
+                    )
+                    await member_ch.send(embed=embed)
                     print(f"[info]: {member.name} joins lum guild")
                 except discord.Forbidden:
                     print("[error]: No permission")

@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from cfg.config import VERSION
+from src.cfg.config import VERSION
 
 
 class Version(commands.Cog):

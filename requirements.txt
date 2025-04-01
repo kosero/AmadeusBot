@@ -1,6 +1,1 @@
 discord.py
-requests
-bs4
-audioop-lts
-characterai
-websockets==11.0.3

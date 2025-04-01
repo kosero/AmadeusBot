@@ -1,11 +1,10 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import json
 import re
 from src.utils import send_webhook_message
 
-from cfg.config import ZINCIRLI_KEY
+from src.cfg.config import ZINCIRLI_KEY
 
 
 def encrypt(plaintext, key):

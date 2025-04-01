@@ -4,7 +4,7 @@ from discord import app_commands
 import datetime
 
 
-from cfg.config import LUM_ROLE, LUM_USER_LOG_CH, GATE_KEEPER
+from src.cfg.config import LUM_ROLE, LUM_USER_LOG_CH, GATE_KEEPER
 
 
 class Register(commands.Cog):

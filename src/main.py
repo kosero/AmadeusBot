@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-from cfg.config import BOT_TOKEN
+from src.cfg.config import BOT_TOKEN, BOT_STATE
 
 
 class AmadeusBot(commands.Bot):
@@ -12,6 +12,7 @@ class AmadeusBot(commands.Bot):
         intents.members = True
         intents.messages = True
         intents.guilds = True
+
         super().__init__(command_prefix="!", intents=intents)
 
     async def setup_hook(self):
@@ -25,5 +26,6 @@ class AmadeusBot(commands.Bot):
         print(f"[work]: {self.user}")
 
 
-bot = AmadeusBot()
-bot.run(BOT_TOKEN)
+if BOT_STATE:
+    bot = AmadeusBot()
+    bot.run(BOT_TOKEN)

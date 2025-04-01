@@ -2,7 +2,7 @@ import json
 import discord
 import random
 
-from cfg.config import NECO_PPS
+from src.cfg.config import NECO_PPS
 
 
 def change_words(text, old_word, new_word):
