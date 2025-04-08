@@ -13,13 +13,8 @@ class Ping(commands.Cog):
         await ctx.reply(f"[latency]: {latency}ms")
         print(f"[ok]: ping, author: {ctx.author}")
 
-
-class Slash_ping(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(name="ping", description="Ping Pong!")
-    async def ping(self, interaction: discord.Interaction):
+    async def slash_ping(self, interaction: discord.Interaction):
         latency = round(self.bot.latency * 1000)
         await interaction.response.send_message(f"[latency]: {latency}ms")
         print(f"[ok]: ping, author: {interaction.user}")
@@ -27,4 +22,3 @@ class Slash_ping(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Ping(bot))
-    await bot.add_cog(Slash_ping(bot))

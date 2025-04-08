@@ -40,11 +40,6 @@ class Kick(commands.Cog):
         except discord.HTTPException as e:
             await ctx.reply(f"[error]: {e}", delete_after=5)
 
-
-class SlashKick(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(name="kick", description="Kick a member.")
     @app_commands.describe(member="The member to kick", reason="Reason for kicking")
     async def slash_kick(
@@ -93,4 +88,3 @@ class SlashKick(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Kick(bot))
-    await bot.add_cog(SlashKick(bot))

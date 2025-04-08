@@ -34,11 +34,6 @@ class Roulette(commands.Cog):
             except discord.HTTPException as e:
                 await ctx.reply(f"[error]: {e}", delete_after=5)
 
-
-class SlashRoulette(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(name="rulet", description="Bir rulet oynayın.")
     async def slash_rulet(self, interaction: discord.Interaction):
         random.seed(time.time())
@@ -67,4 +62,3 @@ class SlashRoulette(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Roulette(bot))
-    await bot.add_cog(SlashRoulette(bot))

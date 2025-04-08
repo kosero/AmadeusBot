@@ -20,11 +20,6 @@ class MessagePurge(commands.Cog):
         deleted = await ctx.channel.purge(limit=count + 1)
         await ctx.reply(f"[info]: {len(deleted)} messages deleted", delete_after=5)
 
-
-class SlashPurge(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(
         name="purge", description="Delete a certain number of messages."
     )
@@ -50,4 +45,3 @@ class SlashPurge(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(MessagePurge(bot))
-    await bot.add_cog(SlashPurge(bot))

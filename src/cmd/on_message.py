@@ -1,9 +1,9 @@
 from discord.ext import commands
 
-from src.cmd.crypt import encrypt
+from ..utils import encrypt
 from src.utils import send_webhook_message
 
-from src.cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY
+from ..cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY
 
 
 class OnMessage(commands.Cog):

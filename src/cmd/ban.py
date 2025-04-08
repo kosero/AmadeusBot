@@ -31,11 +31,6 @@ class Ban(commands.Cog):
         except discord.HTTPException as e:
             await ctx.reply(f"[error]: {e}", delete_after=5)
 
-
-class SlashBan(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
     @app_commands.command(name="ban", description="Ban a member.")
     @app_commands.describe(member="The member to ban", reason="Reason for banning")
     async def slash_ban(
@@ -71,4 +66,3 @@ class SlashBan(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Ban(bot))
-    await bot.add_cog(SlashBan(bot))

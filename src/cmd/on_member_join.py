@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from src.cfg.config import GOS_GUILD, GOS_REGISTER_CH, LUM_GUILD, GATE_KEEPER
+from ..cfg.config import GOS_GUILD, GOS_REGISTER_CH, LUM_GUILD, GATE_KEEPER
 
 
 def welcome_message(member):

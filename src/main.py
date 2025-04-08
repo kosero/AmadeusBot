@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import os
 
-from src.cfg.config import BOT_TOKEN, BOT_STATE
+from .cfg.config import BOT_TOKEN, BOT_STATE
 
 
 class AmadeusBot(commands.Bot):
