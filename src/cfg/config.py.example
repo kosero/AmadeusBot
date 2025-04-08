@@ -1,0 +1,31 @@
+from typing import Set
+
+GOS_GUILD: int = 
+GOS_REGISTER_CH: int = 
+GOS_WAIT_ROLE: int = 
+
+
+LUM_GUILD: int = 
+LUM_ROLE: int = 
+GATE_KEEPER: int = 
+LUM_USER_LOG_CH: int = 
+BIG_BROTHER_WATCHING: int = 
+LUM_WAIT_ROLE: int = 
+REGISTER_ALLOWED_ROL_OR_MEMBER: Set[int] = { }
+
+
+NECO_PPS = [
+    "",
+    "",
+]
+
+ZINCIRLI_KEY: str = ""
+ZINCIRLI_CH: int = 
+
+CAI_CHAT_ID: str = ""
+CAI_TOKEN: str = ""
+CAI_CHAR: str = ""
+
+VERSION: str = "0.2.5"
+BOT_STATE: bool = 
+BOT_TOKEN: str = 

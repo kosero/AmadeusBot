@@ -1,7 +1,7 @@
 import json
 import discord
 import random
-
+import re
 from .cfg.config import NECO_PPS, ZINCIRLI_KEY
 
 
