@@ -1,9 +1,7 @@
 from discord.ext import commands
 
-from ..utils import encrypt
-from src.utils import send_webhook_message
-
-from ..cfg.config import ZINCIRLI_CH, ZINCIRLI_KEY
+from src.utils import send_webhook_message, cipher_text
+from ..cfg.config import ZINCIRLI_CH
 
 
 class OnMessage(commands.Cog):
@@ -17,7 +15,7 @@ class OnMessage(commands.Cog):
         if message.webhook_id:
             return
         if message.channel.id == ZINCIRLI_CH:
-            encrypted_message = encrypt(message.content, ZINCIRLI_KEY)
+            encrypted_message = cipher_text(message.content)
             avatar_url = (
                 message.author.avatar.url
                 if message.author.avatar

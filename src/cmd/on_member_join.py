@@ -11,26 +11,24 @@ from ..cfg.config import (
 )
 
 
-def gos_welcome_message(member):
-    welcome = (
-        f"Hos geldin {member}, sunucuya katilman için biraz sohbet etmen yeterli.\n"
-        "Sadece steins;gate izleyenler girebilir o yuzden bizimle konusmaniz gerekli."
-    )
-    return welcome
-
-
-def lum_welcome_message(member):
-    welcome = (
-        f"Hos geldin {member}, sunucuya katilman için biraz sohbet etmen yeterli.\n"
-        "Burada rahatsızlık vermemeye ve insan gibi davranmaya özen göster.\n"
-        f"<@&{GATE_KEEPER}> seninle ozenle ilgilenecektir."
-    )
-    return welcome
-
-
 class MemberJoin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+    def _gos_welcome_message(self, member):
+        welcome = (
+            f"Hos geldin {member}, sunucuya katilman için biraz sohbet etmen yeterli.\n"
+            "Sadece steins;gate izleyenler girebilir o yuzden bizimle konusmaniz gerekli."
+        )
+        return welcome
+
+    def _lum_welcome_message(self, member):
+        welcome = (
+            f"Hos geldin {member}, sunucuya katilman için biraz bizimle sohbet etmen yeterli.\n"
+            "Burada rahatsızlık vermemeye ve insan gibi davranmaya özen göster.\n"
+            f"<@&{GATE_KEEPER}> seninle ozenle ilgilenecektir."
+        )
+        return welcome
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
@@ -61,7 +59,7 @@ class MemberJoin(commands.Cog):
                     member_ch = await wait_category.create_text_channel(
                         name=member.name, overwrites=overwrites
                     )
-                    await member_ch.send(gos_welcome_message(member.mention))
+                    await member_ch.send(self._gos_welcome_message(member.mention))
                     print(f"[info]: {member.name} joins lum guild")
                 except discord.Forbidden:
                     print("[error]: No permission")
@@ -106,7 +104,7 @@ class MemberJoin(commands.Cog):
                     member_ch = await wait_category.create_text_channel(
                         name=member.name, overwrites=overwrites
                     )
-                    await member_ch.send(lum_welcome_message(member.mention))
+                    await member_ch.send(self._lum_welcome_message(member.mention))
                     print(f"[info]: {member.name} joins lum guild")
                 except discord.Forbidden:
                     print("[error]: No permission")

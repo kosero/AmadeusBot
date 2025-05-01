@@ -1,101 +1,6 @@
-import json
 import discord
 import random
-import re
-from .cfg.config import NECO_PPS, ZINCIRLI_KEY
-
-
-def encrypt(plaintext, key):
-    def encrypt_match(match):
-        return match.group(0)
-
-    key_length = len(key)
-    key_as_int = [ord(i) for i in key.upper()]
-    ciphertext = ""
-    key_index = 0
-
-    pattern = re.compile(r"<@\d+>")
-    parts = pattern.split(plaintext)
-    patterns = pattern.findall(plaintext)
-
-    for i, part in enumerate(parts):
-        for char in part:
-            if char.isalpha():
-                value = (
-                    ord(char.upper()) - 65 + key_as_int[key_index % key_length] - 65
-                ) % 26
-                ciphertext += chr(value + 65)
-                key_index += 1
-            else:
-                ciphertext += char
-        if i < len(patterns):
-            ciphertext += patterns[i]
-
-    return ciphertext
-
-
-def decrypt(ciphertext, key):
-    def decrypt_match(match):
-        return match.group(0)
-
-    key_length = len(key)
-    key_as_int = [ord(i) for i in key.upper()]
-    plaintext = ""
-    key_index = 0
-
-    pattern = re.compile(r"<@\d+>")
-    parts = pattern.split(ciphertext)
-    patterns = pattern.findall(ciphertext)
-
-    for i, part in enumerate(parts):
-        for char in part:
-            if char.isalpha():
-                value = (
-                    ord(char.upper()) - 65 - key_as_int[key_index % key_length] + 65
-                ) % 26
-                plaintext += chr(value + 65)
-                key_index += 1
-            else:
-                plaintext += char
-        if i < len(patterns):
-            plaintext += patterns[i]
-
-    return plaintext.lower()
-
-
-async def zn_ch_en(message):
-    encrypted_message = encrypt(message.content, ZINCIRLI_KEY)
-    avatar_url = (
-        message.author.avatar.url
-        if message.author.avatar
-        else "https://i.imgur.com/CSU09SU.png"
-    )
-    await send_webhook_message(
-        "custom",
-        message.channel,
-        encrypted_message,
-        custom_avatar=avatar_url,
-        custom_name=message.author.name,
-    )
-    await message.delete()
-
-
-def change_words(text, old_word, new_word):
-    updated_text = text.replace(old_word, new_word)
-    return updated_text
-
-
-def chg_json_var(file_path: str, key: str, new_value):
-    with open(file_path, "r", encoding="utf-8") as file:
-        data = json.load(file)
-
-    if key in data:
-        data[key] = new_value
-
-        with open(file_path, "w", encoding="utf-8") as file:
-            json.dump(data, file, indent=4)
-    else:
-        return
+from .cfg.config import NECO_PPS
 
 
 async def get_or_create_webhook(channel):
@@ -124,3 +29,79 @@ async def send_webhook_message(
         username = custom_name
 
     await webhook.send(message, username=username, avatar_url=avatar_url, wait=False)
+
+
+async def build_embed(embed_data: dict):
+    """
+    embed_data = {
+        "title": "Test",
+        "description": "test.",
+        "color": discord.Color.blue(),
+        "thumbnail_url": "https://i.imgur.com/0EGjE0h.gif",
+        "image_url": "https://i.imgur.com/0EGjE0h.gif",
+        "fields": [ ("test 1", "test 1"), ("test 2", "test 2") ],
+        "footer": "Test Footer",
+    }
+    """
+    embed = discord.Embed(
+        title=embed_data.get("title"),
+        description=embed_data.get("description"),
+        color=embed_data.get("color", discord.Color.blue()),
+    )
+
+    thumbnail_url = embed_data.get("thumbnail_url")
+    if thumbnail_url:
+        embed.set_thumbnail(url=thumbnail_url)
+
+    fields = embed_data.get("fields", [])
+    image_url = embed_data.get("image_url")
+
+    for i, field in enumerate(fields):
+        embed.add_field(name=field[0], value=field[1], inline=False)
+        if i == len(fields) // 2 and image_url:
+            embed.set_image(url=image_url)
+
+    footer = embed_data.get("footer")
+    if footer:
+        embed.set_footer(text=footer)
+
+    return embed
+
+
+CYPHER_MAP = {
+    "A": "A",
+    "B": "A\u0307",
+    "C": "A\u0321",
+    "D": "A\u0331",
+    "E": "A\u0301",
+    "F": "A\u032e",
+    "G": "A\u030b",
+    "H": "A\u0330",
+    "I": "A\u0309",
+    "J": "A\u0313",
+    "K": "A\u0323",
+    "L": "A\u0306",
+    "M": "A\u030c",
+    "N": "A\u0302",
+    "O": "A\u030a",
+    "P": "A\u032f",
+    "Q": "A\u0324",
+    "R": "A\u0311",
+    "S": "A\u0303",
+    "T": "A\u0304",
+    "U": "A\u0308",
+    "V": "A\u0300",
+    "W": "A\u030f",
+    "X": "A\u036f",
+    "Y": "A\u0326",
+    "Z": "A\u0337",
+}
+REVERSE_CYPHER_MAP = {v: k for k, v in CYPHER_MAP.items()}
+
+
+def decipher_text(_text: str) -> str:
+    return "".join(REVERSE_CYPHER_MAP.get(c, c) for c in _text)
+
+
+def cipher_text(_text: str) -> str:
+    return "".join(CYPHER_MAP.get(c.upper(), c) for c in _text)

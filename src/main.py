@@ -13,7 +13,7 @@ class AmadeusBot(commands.Bot):
         intents.messages = True
         intents.guilds = True
 
-        super().__init__(command_prefix="!", intents=intents)
+        super().__init__(command_prefix=".", intents=intents)
 
     async def setup_hook(self):
         for filename in os.listdir("./src/cmd"):

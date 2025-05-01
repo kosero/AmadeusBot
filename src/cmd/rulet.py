@@ -17,10 +17,10 @@ class Roulette(commands.Cog):
         user = ctx.author
         outcome = random.choice(["win", "lose"])
 
-        await ctx.reply("Derin bir nefes alarak tetiğe yavaşça basıyorsun...")
+        msg = await ctx.reply("Derin bir nefes alarak tetiğe yavaşça basıyorsun...")
         await asyncio.sleep(3)
         if outcome == "win":
-            await ctx.channel.send("Bugün ölüm seninle boy ölçüşemedi.")
+            await msg.edit(content="Bugün ölüm seninle boy ölçüşemedi.")
         else:
             try:
                 duration = 86400
@@ -28,8 +28,12 @@ class Roulette(commands.Cog):
                     discord.utils.utcnow() + timedelta(seconds=duration),
                     reason="Rulet kaybı",
                 )
-                await ctx.channel.send(
-                    f"Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, geçmişin sessiz anılarıyla kısa bir elveda zamanı..."
+                await msg.edit(
+                    content=(
+                        "Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini "
+                        "fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, "
+                        "geçmişin sessiz anılarıyla kısa bir elveda zamanı..."
+                    )
                 )
             except discord.HTTPException as e:
                 await ctx.reply(f"[error]: {e}", delete_after=5)
@@ -44,8 +48,11 @@ class Roulette(commands.Cog):
             "Derin bir nefes alarak tetiğe yavaşça basıyorsun..."
         )
         await asyncio.sleep(3)
+
         if outcome == "win":
-            await interaction.channel.send("Bugün ölüm seninle boy ölçüşemedi.")
+            await interaction.edit_original_response(
+                content="Bugün ölüm seninle boy ölçüşemedi."
+            )
         else:
             try:
                 duration = 86400
@@ -53,11 +60,15 @@ class Roulette(commands.Cog):
                     discord.utils.utcnow() + timedelta(seconds=duration),
                     reason="Rulet kaybı",
                 )
-                await interaction.channel.send(
-                    f"Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, geçmişin sessiz anılarıyla kısa bir elveda zamanı..."
+                await interaction.edit_original_response(
+                    content=(
+                        "Kaderin ince dokunuşu bugün, şansın seninle vedalaşmaya karar verdiğini "
+                        "fısıldarcasına hissediliyor; sanki son perdenin inmesi vakti gelmiş gibi, "
+                        "geçmişin sessiz anılarıyla kısa bir elveda zamanı..."
+                    )
                 )
             except discord.HTTPException as e:
-                await interaction.response.send_message(f"[error]: {e}", ephemeral=True)
+                await interaction.followup.send(f"[error]: {e}", ephemeral=True)
 
 
 async def setup(bot):
