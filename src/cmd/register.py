@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import datetime
-
+from datetime import datetime
 
 from ..cfg.config import (
     LUM_WAIT_ROLE,
@@ -18,12 +17,8 @@ class Register(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="register", description="Bir üyenin kaydını yapar.")
-    async def register(
-        self,
-        interaction: discord.Interaction,
-        member: discord.Member,
-    ):
-        if not isinstance(interaction.user, discord.Member):
+    async def register(self, interaction: discord.Interaction, member: discord.Member):
+        if not interaction.guild or not isinstance(interaction.user, discord.Member):
             await interaction.response.send_message(
                 "[error]: Bu komut sadece sunucuda çalışır.", ephemeral=True
             )
@@ -32,47 +27,48 @@ class Register(commands.Cog):
         user_roles = {role.id for role in interaction.user.roles}
         if not user_roles & REGISTER_ALLOWED_ROL_OR_MEMBER:
             await interaction.response.send_message(
-                "[warn]: yetkin yetmiyor", ephemeral=True
+                "[warn]: Yetkin yetmiyor", ephemeral=True
             )
             return
 
-        register_role = discord.utils.get(interaction.guild.roles, id=LUM_ROLE)
+        guild = interaction.guild
+
+        register_role = guild.get_role(LUM_ROLE)
         if register_role:
             await member.add_roles(register_role)
         else:
-            if member.guild.system_channel:
-                await member.guild.system_channel.send(
-                    "[error]: register_role not found"
-                )
+            if guild.system_channel:
+                await guild.system_channel.send("[error]: Kayıt rolü bulunamadı")
 
         log_channel = self.bot.get_channel(LUM_USER_LOG_CH)
-        if log_channel and isinstance(log_channel, discord.TextChannel):
+        if isinstance(log_channel, discord.TextChannel):
             embed = discord.Embed(
-                title="Log:",
+                title="Kayıt Logu",
                 description=(
-                    f"**member:** {member.mention}\n"
-                    f"**author:** {interaction.user.mention}\n"
-                    f"**date:** {datetime.datetime.now()}"
+                    f"**Kullanıcı:** {member.mention}\n"
+                    f"**Kayıt Eden:** {interaction.user.mention}\n"
+                    f"**Tarih:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
                 ),
                 color=discord.Color.yellow(),
             )
             await log_channel.send(embed=embed)
 
-        if interaction.channel and isinstance(interaction.channel, discord.TextChannel):
-            overwrites = {
-                member: discord.PermissionOverwrite(
-                    view_channel=False, send_messages=False
-                )
-            }
+        if isinstance(interaction.channel, discord.TextChannel):
             await interaction.channel.set_permissions(
-                member, overwrite=overwrites[member]
+                member,
+                overwrite=discord.PermissionOverwrite(
+                    view_channel=False, send_messages=False
+                ),
             )
 
-        guild = self.bot.get_guild(LUM_GUILD)
         kayitsiz_role = guild.get_role(LUM_WAIT_ROLE)
-        await member.remove_roles(kayitsiz_role)
-        await interaction.response.send_message("Kayit ettim")
-        print(f"[ok]: register {member.name}")
+        if kayitsiz_role in member.roles:
+            await member.remove_roles(kayitsiz_role)
+
+        await interaction.response.send_message(
+            "[info]: Kayıt tamamlandı", ephemeral=True
+        )
+        print(f"[ok]: Kayit edildi -> {member.name}")
 
 
 async def setup(bot):

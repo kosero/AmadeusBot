@@ -1,3 +1,5 @@
+import discord
+import aiohttp
 from discord.ext import commands
 
 from src.utils import send_webhook_message, cipher_text

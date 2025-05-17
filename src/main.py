@@ -22,7 +22,7 @@ class AmadeusBot(commands.Bot):
         print("[info]: all cogs loaded")
 
     async def on_ready(self):
-        await self.tree.sync()
+        await bot.tree.sync()
         print(f"[work]: {self.user}")
 
 
