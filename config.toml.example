@@ -1,0 +1,18 @@
+[bot]
+token = "ruhi123"
+version = "0.0.0"
+
+[ai]
+gemini_token = "ruhi123"
+max_history = 5
+
+[lum]
+guild_id = 123456789
+wait_role_id = 123456789
+register_watch_role_id = 123456789
+register_allowed_rol_or_member = 123456789
+lum_user_log_ch = 123456789
+
+[gos]
+guild_id = 123456789
+wait_role_id = 123456789
