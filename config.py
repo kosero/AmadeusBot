@@ -19,6 +19,7 @@ BIG_BROTHER_WATCHING: int = config["lum"]["register_watch_role_id"]
 LUM_REGISTER_ALLOWED_ROL_OR_MEMBER = config["lum"]["register_allowed_rol_or_member"]
 LUM_USER_LOG_CH: int = config["lum"]["lum_user_log_ch"]
 ZINCIRLI_CH: int = config["lum"]["zincirli_ch"]
+LUM_REGISTER_ROLE = config["lum"]["register_role_id"]
 
 # GOS
 GOS_GUILD: int = config["gos"]["guild_id"]

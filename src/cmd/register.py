@@ -7,6 +7,7 @@ from config import (
     LUM_WAIT_ROLE,
     LUM_USER_LOG_CH,
     LUM_REGISTER_ALLOWED_ROL_OR_MEMBER,
+    LUM_REGISTER_ROLE,
 )
 
 
@@ -23,7 +24,7 @@ class Register(commands.Cog):
             return
 
         user_roles = {role.id for role in interaction.user.roles}
-        if not user_roles & LUM_REGISTER_ALLOWED_ROL_OR_MEMBER:
+        if LUM_REGISTER_ALLOWED_ROL_OR_MEMBER not in user_roles:
             await interaction.response.send_message(
                 "[warn]: Yetkin yetmiyor", ephemeral=True
             )
@@ -31,12 +32,16 @@ class Register(commands.Cog):
 
         guild = interaction.guild
 
-        register_role = guild.get_role(LUM_WAIT_ROLE)
+        register_role = guild.get_role(LUM_REGISTER_ROLE)
         if register_role:
             await member.add_roles(register_role)
         else:
             if guild.system_channel:
-                await guild.system_channel.send("[error]: Kayıt rolü bulunamadı")
+                await guild.system_channel.send("[error]: Kayıt sonrası verilecek rol bulunamadı")
+
+        wait_role = guild.get_role(LUM_WAIT_ROLE)
+        if wait_role in member.roles:
+            await member.remove_roles(wait_role)
 
         log_channel = self.bot.get_channel(LUM_USER_LOG_CH)
         if isinstance(log_channel, discord.TextChannel):
@@ -58,10 +63,6 @@ class Register(commands.Cog):
                     view_channel=False, send_messages=False
                 ),
             )
-
-        kayitsiz_role = guild.get_role(LUM_WAIT_ROLE)
-        if kayitsiz_role in member.roles:
-            await member.remove_roles(kayitsiz_role)
 
         await interaction.response.send_message(
             "[info]: Kayıt tamamlandı", ephemeral=True
