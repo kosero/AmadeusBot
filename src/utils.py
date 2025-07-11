@@ -7,9 +7,10 @@ from googletrans import Translator
 
 translator = Translator()
 
+
 async def text_to_wav(text: str):
     try:
-        translated = await translator.translate(text, src='tr', dest='ja')
+        translated = await translator.translate(text, src="tr", dest="ja")
         jp_text = translated.text
     except Exception as e:
         return f"{e}"
@@ -26,7 +27,7 @@ async def text_to_wav(text: str):
 
     match = re.search(
         r'"(https://yukkuritalkeastus2\.blob\.core\.windows\.net/yukkuriwav/.*?\.wav)"',
-        html
+        html,
     )
     if match:
         return match.group(1)
@@ -51,7 +52,7 @@ async def send_webhook_message(
     character, channel, message, custom_avatar=None, custom_name=None
 ):
     webhook = await get_or_create_webhook(channel)
-    
+
     avatar_url = custom_avatar
     username = custom_name
 

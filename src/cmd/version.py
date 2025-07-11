@@ -13,7 +13,6 @@ class Yukkiritalk(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.command()
     async def yk(self, ctx, *, text: str):
         async with ctx.typing():
@@ -25,7 +24,9 @@ class Yukkiritalk(commands.Cog):
                         await ctx.reply("Audio file could not be downloaded.")
                         return
 
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                    with tempfile.NamedTemporaryFile(
+                        delete=False, suffix=".wav"
+                    ) as tmp_file:
                         tmp_file.write(await resp.read())
                         tmp_path = tmp_file.name
 
@@ -33,7 +34,6 @@ class Yukkiritalk(commands.Cog):
             await ctx.reply(file=file)
             os.remove(tmp_path)
             print(f"yukkuritalk, author: {ctx.author}")
-
 
     @app_commands.command(name="yukkuritalk", description=":speaking_head:")
     @app_commands.describe(text="metin")
@@ -44,10 +44,14 @@ class Yukkiritalk(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
-                    await interaction.followup.send("Audio file could not be downloaded.")
+                    await interaction.followup.send(
+                        "Audio file could not be downloaded."
+                    )
                     return
 
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".wav"
+                ) as tmp_file:
                     tmp_file.write(await resp.read())
                     tmp_path = tmp_file.name
 
