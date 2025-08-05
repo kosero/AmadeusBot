@@ -53,13 +53,13 @@ class OnMessage(commands.Cog):
                 await message.add_reaction("<:ayak:1245436100898717706>")
 
                 if MAX_HISTORY == 0:
-                    response_text = await generate_response_with_text(cleaned_text, message.author.name)
+                    response_text = await generate_response_with_text(cleaned_text)
                     await split_and_send_messages(message, response_text, 1700)
                     return
 
                 update_message_history(message.author.id, cleaned_text)
                 response_text = await generate_response_with_text(
-                    get_formatted_message_history(message.author.id), message.author.name
+                    get_formatted_message_history(message.author.id)
                 )
                 update_message_history(message.author.id, response_text)
                 await split_and_send_messages(message, response_text, 1700)
