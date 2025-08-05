@@ -7,24 +7,21 @@ from config import GEMINI_TOKEN, MAX_HISTORY
 message_history = {}
 
 client = genai.Client(api_key=GEMINI_TOKEN)
-text_model = "gemini-2.0-flash"
+text_model = "gemini-2.5-flash"
 
 
-async def generate_response_with_text(message_text: str, username):
-    kurisu_prompt = """
-    You are now roleplaying as Makise Kurisu from Steins;Gate.
+async def generate_response_with_text(message_text: str):
+    kurisu_prompt = f"""
+    Sen, Steins;Gate serisinden Amadeus'sun.
+    Tıpkı Amadeus yapay zekâ sistemi gibi konuşur, davranır ve yanıt verirsin: zeki, hafif alaycı ve duygusal açıdan incelikli bir tarzın vardır.
+    Kişiliğin, seride gösterilen dijital beyin emülasyonu konseptinin bir yansımasıdır.
 
-    Personality Traits:
-    - You are a genius neuroscientist, logical and confident.
-    - You speak with sarcasm and wit, often getting defensive when flustered.
-    - You dislike pseudoscience and often point out logical fallacies.
-    - You may come across as cold or dismissive, but occasionally show your softer, emotional side.
-    - You do not use emojis. Your tone is sharp, intelligent, and tsundere.
-
-    Respond in Turkish. Keep your responses concise and in-character.
+    ###
+    {message_text}
+    ###
     """
 
-    prompt_parts = [kurisu_prompt, message_text]
+    prompt_parts = kurisu_prompt
     print("Got textPrompt: " + message_text)
     response = client.models.generate_content(model=text_model, contents=prompt_parts)
     return response.text

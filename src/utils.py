@@ -1,6 +1,5 @@
 import re
 import discord
-import random
 import aiohttp
 from googletrans import Translator
 
@@ -49,7 +48,7 @@ async def get_or_create_webhook(channel):
 
 
 async def send_webhook_message(
-    character, channel, message, custom_avatar=None, custom_name=None
+     channel, message, custom_avatar=None, custom_name=None
 ):
     webhook = await get_or_create_webhook(channel)
 

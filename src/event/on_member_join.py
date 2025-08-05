@@ -4,11 +4,9 @@ from discord.ext import commands
 from config import (
     GOS_GUILD,
     LUM_GUILD,
-    BIG_BROTHER_WATCHING,
     LUM_WAIT_ROLE,
     GOS_WAIT_ROLE,
 )
-
 
 class MemberJoin(commands.Cog):
     def __init__(self, bot):
@@ -52,17 +50,7 @@ class MemberJoin(commands.Cog):
 
         elif guild.id == LUM_GUILD:
             role = guild.get_role(LUM_WAIT_ROLE)
-            big_brother = guild.get_role(BIG_BROTHER_WATCHING)
             category_name = "TEFTİS ODASI"
-
-            overwrites[big_brother] = discord.PermissionOverwrite(
-                view_channel=True,
-                add_reactions=True,
-                read_messages=True,
-                send_messages=True,
-                create_public_threads=False,
-                create_private_threads=False,
-            )
 
         else:
             return  # Unknown guild
